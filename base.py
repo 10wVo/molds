@@ -1,48 +1,52 @@
+'''
+程序说明：
+python版本: 3.11.7
+Windows11
+只需修改两个设置的部分，其他的尽量不要动
+日期:2025.5.18
+'''
 import cv2
 import os
 import numpy as np
+from cut import cut_images
+from find_hsv import find_hsv_value
 
-folder_path = "C:\\Users\Administrator\Desktop\molds\picture" #原始文件保存路径
-cut_img_path = "C:\\Users\Administrator\Desktop\molds\picture_aftercut"#剪切后图片路径
+#————————————功能设置————————————————#
+cut_picture = True #是否裁剪图片
+read_picture = True #是否以第一张图片作为hsv值读取参考，关闭该功能则使用默认范围值
+display_picture = True #是否显示图片
+
+
+#————————————初始参数设置————————————————#
+project_path = "E:\molds"#项目所在路径
 lower_yellow = np.array([20, 100, 100])
 upper_yellow = np.array([40, 255, 255])#提取范围
 
 
-'''
-读取文件夹中的视频截图，批量裁剪处理
-'''
-'''
-x, y, w, h = 1020, 53, 1021, 1022 # 裁剪区域的坐标 (x, y, w, h)
 
-for filename in os.listdir(folder_path):
-    img_path = os.path.join(folder_path, filename)
-    img = cv2.imread(img_path, cv2.IMREAD_UNCHANGED)
+#===============以下部分只要不出BUG就尽量不要修改===============#
+#===============以下部分只要不出BUG就尽量不要修改===============#
+#===============以下部分只要不出BUG就尽量不要修改===============#
 
-    # 检查图像是否读取成功
-    if img is None:
-        print(f"无法读取图片: {img_path}. 跳过该文件。")
-        continue
-
-    # 执行裁剪操作
-    cropped_img = img[y:y + h, x:x + w]
-
-    # 保存裁剪后的图片为 JPG 格式
-    cut_img_path = os.path.join("C:\\Users\Administrator\Desktop\molds\picture_aftercut", os.path.splitext(filename)[0] + ".jpg")
-    cv2.imwrite(cut_img_path, cropped_img)
-
-    print(f"已保存裁剪后的图片: {cut_img_path}")
+folder_path = os.path.join(project_path,"origin_picture") #原始文件保存路径
+output_image_path = os.path.join(project_path,"output")#提取后文件保存路径
+if(cut_picture):
+    cut_img_path = os.path.join(project_path,"picture_aftercut")#裁剪后文件保存路径
+    x, y, w, h = 1020, 53, 1021, 1022
+    cut_images(folder_path, cut_img_path, x, y, w, h)
+    folder_path = cut_img_path
     
-'''
-
-'''
-提取图片中的黄色部分
-'''
-
-
+#读取文件夹中的指定图片，作为示例
+if(read_picture):
+    picture_wait_to_read = os.path.join(folder_path, "wait_to_read.jpg")
+    low_x, low_y = 50, 30
+    up_x, up_y = 50, 30
+    lower_yellow = find_hsv_value(picture_wait_to_read, low_x, low_y, display_picture)
+    upper_yellow = find_hsv_value(picture_wait_to_read, up_x, up_y, display_picture)
 
 for filename in os.listdir(folder_path):
     if filename.lower().endswith(('.jpg', '.png')):
-        img_path = os.path.join(cut_img_path, filename)
+        img_path = os.path.join(folder_path, filename)
         img = cv2.imread(img_path, cv2.IMREAD_UNCHANGED)
 
         if img is None:
@@ -66,11 +70,11 @@ for filename in os.listdir(folder_path):
             # 将提取的黄色区域与 alpha 通道合并
             yellow_part_with_alpha = cv2.merge([yellow_part[:, :, 0], yellow_part[:, :, 1], yellow_part[:, :, 2], alpha_channel])
             # 保存带透明度的图片
-            output_path = os.path.join("C:\\Users\Administrator\Desktop\molds\picture_yellow", 'yellow_' + filename)
+            output_path = os.path.join(output_image_path, 'yellow_' + filename)
             cv2.imwrite(output_path, yellow_part_with_alpha)
         else:
             # 如果没有 alpha 通道，直接保存黄色区域的图片
-            output_path = os.path.join("C:\\Users\Administrator\Desktop\molds\picture_yellow", 'yellow_' + filename)
+            output_path = os.path.join(output_image_path, 'yellow_' + filename)
             cv2.imwrite(output_path, yellow_part)
 
         print(f"已保存黄色部分的图片: {output_path}")
@@ -110,6 +114,7 @@ def highlight_common_yellow(image_folder, output_image_path):
     cv2.imwrite(output_image_path, result_image)
     print(f"结果已保存到：{output_image_path}")
 
-image_folder = 'C:\\Users\Administrator\Desktop\molds\picture_yellow'
-output_image_path = 'C:\\Users\Administrator\Desktop\molds\moldsmoldscommon_yellow_highlighted.png'
-highlight_common_yellow(image_folder, output_image_path)
+
+image_folder = 'E:\\molds\\picture_aftercut'
+output_image_path = 'E:\\molds\\common_yellow_highlighted.png'
+highlight_common_yellow(folder_path, output_image_path)
