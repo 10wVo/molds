@@ -3,6 +3,7 @@ import os
 import numpy as np
 
 folder_path = "C:\\Users\Administrator\Desktop\molds\picture" #原始文件保存路径
+cut_img_path = "C:\\Users\Administrator\Desktop\molds\picture_aftercut"#剪切后图片路径
 lower_yellow = np.array([20, 100, 100])
 upper_yellow = np.array([40, 255, 255])#提取范围
 
@@ -36,7 +37,7 @@ for filename in os.listdir(folder_path):
 '''
 提取图片中的黄色部分
 '''
-cut_img_path = "C:\\Users\Administrator\Desktop\molds\picture_aftercut"
+
 
 
 for filename in os.listdir(folder_path):
